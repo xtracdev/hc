@@ -13,7 +13,9 @@ give a true picture of health.
 docker run --volume=/var/run:/var/run:rw -p 15000:5000 xtracdev/hc
 </pre>
 
-Access the endpoint using GET
+Access the endpoint using GET - /health returns the health status of all
+containers, or get the health of a specific container via container name 
+(/health/<container-name>).
 
 <pre>
 curl localhost:15000/health
