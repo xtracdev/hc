@@ -11,7 +11,31 @@ import (
 var docker *dockerclient.DockerClient
 
 func containerHealth(rw http.ResponseWriter, req *http.Request) {
-	rw.Write([]byte("ok"))
+	vars := mux.Vars(req)
+	containerName := vars["container-name"]
+
+	containers, err := docker.ListContainers(false, false, "")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _,c := range containers {
+		for _, name := range c.Names {
+			if len(name) >= 1 && name[0] == '/' {
+				name = name[1:]
+			}
+
+			if name == containerName {
+				status := fmt.Sprintf("%s %s: %s\n", c.Names[0], c.Image, c.Status)
+				rw.Write([]byte(status))
+				return
+			}
+		}
+	}
+
+	http.Error(rw, "", http.StatusNotFound)
+	
 }
 
 func allHealth(rw http.ResponseWriter, req *http.Request) {
