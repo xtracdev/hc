@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/samalba/dockerclient"
 	"log"
@@ -14,7 +15,17 @@ func containerHealth(rw http.ResponseWriter, req *http.Request) {
 }
 
 func allHealth(rw http.ResponseWriter, req *http.Request) {
-	rw.Write([]byte("all ok"))
+	containers, err := docker.ListContainers(false, false, "")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, c := range containers {
+		status := fmt.Sprintf("%s %s: %s\n", c.Names[0], c.Image, c.Status)
+		rw.Write([]byte(status))
+	}
+
 }
 
 func main() {
