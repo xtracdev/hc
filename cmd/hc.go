@@ -35,7 +35,7 @@ func containerHealth(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	http.Error(rw, "", http.StatusNotFound)
-	
+
 }
 
 func allHealth(rw http.ResponseWriter, req *http.Request) {
