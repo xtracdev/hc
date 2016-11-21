@@ -1,15 +1,20 @@
 package main
 
 import (
-	"log"
+	"github.com/gorilla/mux"
 	"github.com/samalba/dockerclient"
+	"log"
 	"net/http"
 )
 
 var docker *dockerclient.DockerClient
 
-func healthHandler(rw http.ResponseWriter, req *http.Request) {
+func containerHealth(rw http.ResponseWriter, req *http.Request) {
 	rw.Write([]byte("ok"))
+}
+
+func allHealth(rw http.ResponseWriter, req *http.Request) {
+	rw.Write([]byte("all ok"))
 }
 
 func main() {
@@ -22,7 +27,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthHandler)
-	http.ListenAndServe(":5000", mux)
+	r := mux.NewRouter()
+	r.HandleFunc("/health/{container-name}", containerHealth)
+	r.HandleFunc("/health", allHealth)
+	http.Handle("/", r)
+	http.ListenAndServe(":5000", nil)
 }
