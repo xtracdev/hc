@@ -17,7 +17,6 @@ Access the endpoint using GET
 
 <pre>
 curl localhost:15000/health
-curl localhost:15000/health
 /modest_cori echo: Up 3 minutes (healthy)
 /silly_bohr sath89/oracle-12c: Up 55 minutes
 </pre>
