@@ -46,6 +46,12 @@ func allHealth(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	for _, c := range containers {
+		//Don't include the health check container as it won't serve
+		//traffic if it is unhealthy.
+		if c.Image == "xtracdev/hc" {
+			continue
+		}
+
 		status := fmt.Sprintf("%s %s: %s\n", c.Names[0], c.Image, c.Status)
 		rw.Write([]byte(status))
 	}
@@ -62,9 +68,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	log.Println("Mount routes")
 	r := mux.NewRouter()
 	r.HandleFunc("/health/{container-name}", containerHealth)
 	r.HandleFunc("/health", allHealth)
 	http.Handle("/", r)
+
+	log.Println("Serve HTTP")
 	http.ListenAndServe(":5000", nil)
 }
