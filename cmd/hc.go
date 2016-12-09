@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/samalba/dockerclient"
 	"log"
 	"net/http"
+	"encoding/json"
 )
 
 var docker *dockerclient.DockerClient
+
+type ContainerStatus struct {
+	Name string
+	Image string
+	Status string
+}
 
 func containerHealth(rw http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
@@ -27,8 +33,19 @@ func containerHealth(rw http.ResponseWriter, req *http.Request) {
 			}
 
 			if name == containerName {
-				status := fmt.Sprintf("%s %s: %s\n", c.Names[0], c.Image, c.Status)
-				rw.Write([]byte(status))
+				status := ContainerStatus {
+					Name: c.Names[0],
+					Image: c.Image,
+					Status: c.Status,
+				}
+
+				bytes, err := json.Marshal(&status)
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				rw.Write(bytes)
 				return
 			}
 		}
@@ -45,6 +62,7 @@ func allHealth(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var healths []ContainerStatus
 	for _, c := range containers {
 		//Don't include the health check container as it won't serve
 		//traffic if it is unhealthy.
@@ -52,9 +70,23 @@ func allHealth(rw http.ResponseWriter, req *http.Request) {
 			continue
 		}
 
-		status := fmt.Sprintf("%s %s: %s\n", c.Names[0], c.Image, c.Status)
-		rw.Write([]byte(status))
+		status := ContainerStatus {
+			Name: c.Names[0],
+			Image: c.Image,
+			Status: c.Status,
+		}
+
+		healths = append(healths, status)
+
 	}
+
+	bytes, err := json.Marshal(healths)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rw.Write(bytes)
 
 }
 
