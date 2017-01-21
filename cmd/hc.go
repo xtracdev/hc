@@ -32,6 +32,9 @@ func containerHealth(rw http.ResponseWriter, req *http.Request) {
 				name = name[1:]
 			}
 
+			info,_ := docker.Info()
+			log.Printf("%+v", *info)
+
 			if name == containerName {
 				status := ContainerStatus {
 					Name: c.Names[0],
@@ -51,8 +54,19 @@ func containerHealth(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	http.Error(rw, "", http.StatusNotFound)
+	notRunning := ContainerStatus{
+		Name: containerName,
+		Image: "unknown",
+		Status: "No container with that name running",
+	}
 
+	bytes, _ := json.Marshal(&notRunning)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Error(rw, string(bytes), http.StatusNotFound)
 }
 
 func allHealth(rw http.ResponseWriter, req *http.Request) {
