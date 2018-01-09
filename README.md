@@ -25,7 +25,7 @@ curl localhost:15000/health
 
 Note the container will need to implement the docker HEALTCHECK to
 give a true picture of health. Without this we can only glean how long
-something has beed up, not if it is healthy or not.
+something has been up, not if it is healthy or not.
 
 Example reflecting positive health status.
 
